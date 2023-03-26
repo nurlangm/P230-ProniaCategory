@@ -27,20 +27,29 @@ namespace P230_Pronia.Controllers
 
 
 
+            List<Plant> modified = new List<Plant>();
+            if (plant is null) return NotFound();
 
-
-            PlantCategory plantCategory1 = null;
-            foreach (var item in plant.PlantCategories)
+            foreach (var item in _context.Plants.Include(p => p.PlantImages).Include(x => x.PlantCategories).ThenInclude(x => x.Category))
             {
-                plantCategory1 = item;
-                break;
+                foreach (PlantCategory plantCategory in item.PlantCategories)
+                {
+                    foreach (var cat in plant.PlantCategories)
+                    {
+                        if (plantCategory.Category.Id == cat.Category.Id && !modified.Contains(item))
+                        {
 
+                            modified.Add(item);
+
+                        }
+                    }
+                }
             }
 
-            ViewBag.RelatedPlant = _context.Plants.Where(x => x.Id != id).Include(p => p.PlantImages).Include(x => x.PlantCategories).Take(4).ToList();
+            ViewBag.RelatedPlant = modified.Where(x => x.Id != id).Take(4).ToList();
 
-            //if (plant is null) return NotFound();
             return View(plant);
+
         }
 
     }
